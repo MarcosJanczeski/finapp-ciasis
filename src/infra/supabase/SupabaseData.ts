@@ -3,15 +3,10 @@ import type { Person, RecurringCommitment, CommitmentKind } from "../../app/stat
 
 export class SupabaseData {
   async getCurrentWorkspaceId(): Promise<string> {
-    const { data, error } = await supabase
-      .from("workspace_members")
-      .select("workspace_id")
-      .limit(1);
-
+    const { data, error } = await supabase.rpc("ensure_workspace");
     if (error) throw error;
-    const row = data?.[0];
-    if (!row?.workspace_id) throw new Error("Workspace not found for current user.");
-    return row.workspace_id as string;
+    if (!data) throw new Error("Workspace not found/created.");
+    return data as string;
   }
 
   async listPeople(workspaceId: string): Promise<Person[]> {
