@@ -94,9 +94,12 @@ function calcTotals(commitments: typeof state.commitments, now: Date) {
 
   for (const c of commitments) {
     if (!c.active) continue;
-    if (c.kind === "EXPENSE") expenses += c.amount_cents;
-    if (c.kind === "INCOME") incomes += c.amount_cents;
-    if (c.kind === "SAVINGS_GOAL") savings += c.amount_cents;
+
+    const monthly = toMonthlyCents(c.amount_cents, c.cadence);
+
+    if (c.kind === "EXPENSE") expenses += monthly;
+    if (c.kind === "INCOME") incomes += monthly;
+    if (c.kind === "SAVINGS_GOAL") savings += monthly;
   }
 
   const requiredMonthly = expenses + savings - incomes; // o que precisa ser coberto por "faturamento"
@@ -115,6 +118,13 @@ function calcTotals(commitments: typeof state.commitments, now: Date) {
     requiredDailyCents: requiredDaily,
     status,
   } as const;
+}
+
+function toMonthlyCents(amountCents: number, cadence: string): number {
+  if (cadence === "DAILY") return amountCents * 30;          // MVP: aproximação
+  if (cadence === "WEEKLY") return amountCents * 4;          // MVP: aproximação
+  if (cadence === "YEARLY") return Math.round(amountCents / 12);
+  return amountCents; // MONTHLY
 }
 
 function wireLogin() {
@@ -204,6 +214,7 @@ function wireDashboard() {
   const amountEl = document.querySelector<HTMLInputElement>("#addAmount")!;
   const personEl = document.querySelector<HTMLSelectElement>("#addPerson")!;
   const msgEl = document.querySelector<HTMLDivElement>("#addMsg")!;
+  const cadenceEl = document.querySelector<HTMLSelectElement>("#addCadence")!;
 
   const open = () => {
     msgEl.textContent = "";
@@ -211,6 +222,7 @@ function wireDashboard() {
     amountEl.value = "";
     personEl.value = "";
     kindEl.value = "EXPENSE";
+    cadenceEl.value = "MONTHLY";
     backdrop.style.display = "block";
     titleEl.focus();
   };
@@ -234,6 +246,7 @@ function wireDashboard() {
     const kind = kindEl.value as any;
     const title = titleEl.value.trim();
     const amountCents = parseMoneyToCents(amountEl.value);
+    const cadence = cadenceEl.value as any;
     const personId = personEl.value ? personEl.value : null;
 
     if (!title) {
@@ -257,6 +270,7 @@ function wireDashboard() {
         title,
         amountCents,
         startDate,
+        cadence,
         counterpartyId: personId,
       });
 

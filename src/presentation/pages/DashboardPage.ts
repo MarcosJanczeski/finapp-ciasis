@@ -101,14 +101,14 @@ function card(title: string, value: string, highlight = false) {
 function statusCard(status: "DEFICITARIO" | "EQUILIBRADO" | "FOLGA", requiredMonthlyCents: number) {
   const label =
     status === "DEFICITARIO" ? "Deficitário" :
-    status === "EQUILIBRADO" ? "Equilibrado" : "Folga";
+      status === "EQUILIBRADO" ? "Equilibrado" : "Folga";
 
   const hint =
     status === "DEFICITARIO"
       ? `Falta cobrir ${formatBRL(requiredMonthlyCents)} no mês.`
       : status === "EQUILIBRADO"
-      ? "Coberto no mês (no limite)."
-      : "Sobrou no mês (acima da meta).";
+        ? "Coberto no mês (no limite)."
+        : "Sobrou no mês (acima da meta).";
 
   return `
   <div style="border:1px solid #eee;border-radius:18px;padding:14px;background:#fff;">
@@ -141,12 +141,12 @@ function emptyState() {
 function commitmentCard(c: RecurringCommitment, people: Person[]) {
   const kindLabel =
     c.kind === "EXPENSE" ? "Despesa" :
-    c.kind === "INCOME" ? "Receita" : "Poupança";
+      c.kind === "INCOME" ? "Receita" : "Poupança";
 
   const kindBadgeStyle =
     c.kind === "EXPENSE" ? "background:#fff0f0;border:1px solid #ffd7d7;color:#a00000;" :
-    c.kind === "INCOME" ? "background:#f0fff4;border:1px solid #c7f3d6;color:#0a7a2f;" :
-    "background:#f4f6ff;border:1px solid #dbe2ff;color:#2a3aa0;";
+      c.kind === "INCOME" ? "background:#f0fff4;border:1px solid #c7f3d6;color:#0a7a2f;" :
+        "background:#f4f6ff;border:1px solid #dbe2ff;color:#2a3aa0;";
 
   const counterparty = c.counterparty_id
     ? people.find(p => p.id === c.counterparty_id)?.name ?? "Pessoa"
@@ -213,6 +213,16 @@ function addModal(people: Person[]) {
           <span style="font-size:12px;opacity:.7;">Valor (R$)</span>
           <input id="addAmount" inputmode="decimal" placeholder="Ex: 1200,00"
             style="padding:12px;border:1px solid #ddd;border-radius:14px;" />
+        </label>
+
+        <label style="display:flex;flex-direction:column;gap:6px;">
+          <span style="font-size:12px;opacity:.7;">Recorrência</span>
+          <select id="addCadence" style="padding:12px;border:1px solid #ddd;border-radius:14px;">
+            <option value="MONTHLY">Mensal</option>
+            <option value="WEEKLY">Semanal</option>
+            <option value="DAILY">Diária</option>
+            <option value="YEARLY">Anual</option>
+          </select>
         </label>
 
         <label style="display:flex;flex-direction:column;gap:6px;">

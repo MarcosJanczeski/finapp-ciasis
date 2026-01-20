@@ -38,6 +38,7 @@ export class SupabaseData {
     kind: CommitmentKind;
     title: string;
     amountCents: number;
+    cadence: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
     startDate: string;
     counterpartyId: string | null;
   }): Promise<void> {
@@ -47,7 +48,7 @@ export class SupabaseData {
         kind: input.kind,
         title: input.title,
         amount_cents: input.amountCents,
-        cadence: "MONTHLY",
+        cadence: input.cadence,
         start_date: input.startDate,
         counterparty_id: input.counterpartyId,
         active: true,

@@ -8,7 +8,7 @@ export type RecurringCommitment = {
   kind: CommitmentKind;
   title: string;
   amount_cents: number;
-  cadence: "MONTHLY";
+  cadence: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
   start_date: string; // YYYY-MM-DD
   counterparty_id: string | null;
   active: boolean;
