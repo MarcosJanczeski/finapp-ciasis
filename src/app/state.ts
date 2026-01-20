@@ -32,6 +32,9 @@ export type AppState = {
   workspaceId: string | null;
   commitments: RecurringCommitment[];
   people: Person[];
+  occurrences: Occurrence[];
+  occMonth: { year: number; month: number } | null;
+  onlyOpenOccurrences: boolean;
 };
 
 export const state: AppState = {
@@ -39,4 +42,24 @@ export const state: AppState = {
   workspaceId: null,
   commitments: [],
   people: [],
+  occurrences: [],
+  occMonth: null,
+  onlyOpenOccurrences: true,
+};
+
+export type OccurrenceStatus = "OPEN" | "PAID" | "RECEIVED" | "CANCELED";
+
+export type Occurrence = {
+  id: string;
+  workspace_id: string;
+  kind: CommitmentKind; // EXPENSE | INCOME | SAVINGS_GOAL
+  title: string;
+  amount_cents: number;
+  due_date: string; // YYYY-MM-DD
+  status: OccurrenceStatus;
+  settled_at: string | null;
+  source_commitment_id: string | null;
+  installment_plan_id: string | null;
+  created_by: string;
+  created_at: string;
 };

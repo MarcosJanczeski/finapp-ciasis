@@ -11,6 +11,7 @@ import { SupabaseData } from "./infra/supabase/SupabaseData";
 
 import { loginPage } from "./presentation/pages/LoginPage";
 import { dashboardPage } from "./presentation/pages/DashboardPage";
+import { occurrencesPage } from "./presentation/pages/OccurrencesPage";
 
 const authService = new AuthService(new SupabaseAuthAdapter());
 const sessionStore = new SessionStore();
@@ -65,6 +66,25 @@ function render() {
   if (route === "/login") {
     setRoot(loginPage());
     wireLogin();
+    return;
+  }
+
+  if (route === "/occurrences") {
+    const now = new Date();
+    const year = state.occMonth?.year ?? now.getFullYear();
+    const month = state.occMonth?.month ?? (now.getMonth() + 1);
+
+    const monthLabel = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+    setRoot(
+      occurrencesPage({
+        monthLabel,
+        onlyOpen: state.onlyOpenOccurrences,
+        occurrences: state.occurrences,
+      })
+    );
+    wireOccurrences(year, month);
     return;
   }
 
@@ -203,6 +223,27 @@ function wireDashboard() {
       go("/login");
     }
   });
+  const btnGoOcc = document.querySelector<HTMLButtonElement>("#btnGoOccurrences")!;
+  btnGoOcc.addEventListener("click", async () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    state.occMonth = { year, month };
+    state.onlyOpenOccurrences = true;
+
+    const workspaceId = state.workspaceId;
+    if (!workspaceId) return;
+
+    state.occurrences = await data.listOccurrences({
+      workspaceId,
+      year,
+      month,
+      onlyOpen: state.onlyOpenOccurrences,
+    });
+
+    go("/occurrences");
+  });
 
   const btnOpen = document.querySelector<HTMLButtonElement>("#btnOpenAdd")!;
   const backdrop = document.querySelector<HTMLDivElement>("#addModalBackdrop")!;
@@ -286,6 +327,84 @@ function wireDashboard() {
       btnSave.textContent = "Salvar";
     }
   });
+}
+
+function wireOccurrences(year: number, month: number) {
+  const btnBack = document.querySelector<HTMLButtonElement>("#btnBackDashboard")!;
+  const btnGen = document.querySelector<HTMLButtonElement>("#btnGenerateMonth")!;
+  const toggle = document.querySelector<HTMLInputElement>("#toggleOnlyOpen")!;
+  const msgEl = document.querySelector<HTMLDivElement>("#occMsg")!;
+
+  const workspaceId = state.workspaceId!;
+  const refresh = async () => {
+    state.occurrences = await data.listOccurrences({
+      workspaceId,
+      year,
+      month,
+      onlyOpen: state.onlyOpenOccurrences,
+    });
+    render();
+  };
+
+  btnBack.addEventListener("click", () => go("/dashboard"));
+
+  toggle.addEventListener("change", async () => {
+    state.onlyOpenOccurrences = toggle.checked;
+    await refresh();
+  });
+
+  btnGen.addEventListener("click", async () => {
+    msgEl.textContent = "";
+    btnGen.disabled = true;
+    btnGen.textContent = "Gerando...";
+    try {
+      const n = await data.generateMonthOccurrences(year, month);
+      msgEl.style.color = "#0a7a2f";
+      msgEl.textContent = `Geradas: ${n}`;
+      await refresh();
+    } catch (e: any) {
+      msgEl.style.color = "#b00020";
+      msgEl.textContent = e?.message ?? "Erro ao gerar mês.";
+    } finally {
+      btnGen.disabled = false;
+      btnGen.textContent = "Gerar mês";
+    }
+  });
+
+  // ações nos cards (delegação)
+  document.body.addEventListener("click", async (ev) => {
+    const target = ev.target as HTMLElement | null;
+    if (!target) return;
+    const act = target.getAttribute("data-act");
+    const id = target.getAttribute("data-id");
+    if (!act || !id) return;
+
+    try {
+      if (act === "pay") {
+        await data.setOccurrenceStatus({
+          id,
+          status: "PAID",
+          settledAt: new Date().toISOString(),
+        });
+      } else if (act === "recv") {
+        await data.setOccurrenceStatus({
+          id,
+          status: "RECEIVED",
+          settledAt: new Date().toISOString(),
+        });
+      } else if (act === "undo") {
+        await data.setOccurrenceStatus({
+          id,
+          status: "OPEN",
+          settledAt: null,
+        });
+      }
+      await refresh();
+    } catch (e: any) {
+      msgEl.style.color = "#b00020";
+      msgEl.textContent = e?.message ?? "Erro ao atualizar status.";
+    }
+  }, { once: true });
 }
 
 function parseMoneyToCents(raw: string): number {

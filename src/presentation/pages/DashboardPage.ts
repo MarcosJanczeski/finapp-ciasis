@@ -75,10 +75,16 @@ function topBar(email: string, monthLabel: string) {
       <div style="font-size:18px;font-weight:800;">FINAPP</div>
       <div style="font-size:12px;opacity:.7;">${email}</div>
     </div>
-    <button id="btnSignOut"
-      style="padding:10px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;">
-      Sair
-    </button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="btnGoOccurrences"
+        style="padding:10px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;">
+        Contas
+      </button>
+      <button id="btnSignOut"
+        style="padding:10px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;">
+        Sair
+      </button>
+    </div>
   </div>
   `;
 }

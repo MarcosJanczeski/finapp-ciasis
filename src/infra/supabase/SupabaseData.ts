@@ -1,5 +1,6 @@
 import { supabase } from "./client";
 import type { Person, RecurringCommitment, CommitmentKind } from "../../app/state";
+import type { Occurrence, OccurrenceStatus } from "../../app/state";
 
 export class SupabaseData {
   async getCurrentWorkspaceId(): Promise<string> {
@@ -58,4 +59,59 @@ export class SupabaseData {
 
     if (error) throw error;
   }
+  async generateMonthOccurrences(year: number, month: number): Promise<number> {
+    const { data, error } = await supabase.rpc("generate_month_occurrences", {
+      p_year: year,
+      p_month: month,
+    });
+    if (error) throw error;
+    return (data ?? 0) as number;
+  }
+
+  async listOccurrences(params: {
+    workspaceId: string;
+    year: number;
+    month: number; // 1..12
+    onlyOpen: boolean;
+  }): Promise<Occurrence[]> {
+    const start = new Date(Date.UTC(params.year, params.month - 1, 1))
+      .toISOString()
+      .slice(0, 10);
+    const end = new Date(Date.UTC(params.year, params.month, 1))
+      .toISOString()
+      .slice(0, 10);
+
+    let q = supabase
+      .from("occurrences")
+      .select("*")
+      .eq("workspace_id", params.workspaceId)
+      .gte("due_date", start)
+      .lt("due_date", end)
+      .order("due_date", { ascending: true });
+
+    if (params.onlyOpen) {
+      q = q.eq("status", "OPEN");
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []) as Occurrence[];
+  }
+
+  async setOccurrenceStatus(input: {
+    id: string;
+    status: OccurrenceStatus;
+    settledAt: string | null;
+  }): Promise<void> {
+    const { error } = await supabase
+      .from("occurrences")
+      .update({
+        status: input.status,
+        settled_at: input.settledAt,
+      })
+      .eq("id", input.id);
+
+    if (error) throw error;
+  }
+
 }
