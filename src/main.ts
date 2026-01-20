@@ -105,7 +105,7 @@ function calcTotals(commitments: typeof state.commitments, now: Date) {
 
   const status =
     requiredMonthly > 0 ? "DEFICITARIO" :
-    requiredMonthly === 0 ? "EQUILIBRADO" : "FOLGA";
+      requiredMonthly === 0 ? "EQUILIBRADO" : "FOLGA";
 
   return {
     expensesCents: expenses,
@@ -252,6 +252,7 @@ function wireDashboard() {
       const startDate = new Date().toISOString().slice(0, 10);
       await data.createCommitment({
         workspaceId,
+        createdBy: state.session!.user.id,
         kind,
         title,
         amountCents,

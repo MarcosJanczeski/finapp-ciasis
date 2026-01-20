@@ -34,6 +34,7 @@ export class SupabaseData {
 
   async createCommitment(input: {
     workspaceId: string;
+    createdBy: string;
     kind: CommitmentKind;
     title: string;
     amountCents: number;
@@ -50,6 +51,7 @@ export class SupabaseData {
         start_date: input.startDate,
         counterparty_id: input.counterpartyId,
         active: true,
+        created_by: input.createdBy,
       },
     ]);
 
