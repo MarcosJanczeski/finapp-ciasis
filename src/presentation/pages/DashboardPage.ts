@@ -92,8 +92,8 @@ function card(title: string, value: string, highlight = false) {
     background:${highlight ? "#111" : "#fff"};
     color:${highlight ? "#fff" : "#111"};
   ">
-    <div style="font-size:12px;opacity:${highlight ? ".85" : ".7"};">${title}</div>
-    <div style="font-size:24px;font-weight:900;margin-top:6px;">${value}</div>
+    <div style="font-size:12px;color:${highlight ? "rgba(255,255,255,.85)" : "rgba(17,17,17,.7)"};">${title}</div>
+    <div style="font-size:24px;font-weight:900;margin-top:6px;color:${highlight ? "#fff" : "#111"};">${value}</div>
   </div>
   `;
 }
